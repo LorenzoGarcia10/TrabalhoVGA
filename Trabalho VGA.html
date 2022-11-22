@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <title>Gerador de Bases</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body{background-color: #2c333d;}
+        .box{
+             margin: 50px auto;
+             padding: 30px 15px;
+             width: 720px;
+             text-align: center;
+             background-color: #404854;
+             height: 600px;
+             border-radius: 45px;
+             border: 5px solid #20252c;
+             color: white;
+        }
+        h2{font-size: 40px;font-family: sans-serif;font-weight: normal;padding-bottom: 15px;}
+        input{
+            outline: none;
+            border: 3px solid #ccc;
+            padding-left: 15px;
+            border-radius: 20px;
+            height: 50px;
+            line-height: 50px;
+            width: 75%;
+            font-size: 20px;
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+        }
+        input[type="submit"]{
+            margin-top: 15px;
+            width: 200px;
+            height: 40px;
+            border-radius: 20px;
+            outline: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            display: block;
+            margin: 10px auto;
+        }
+        ul{font-size: 18px;}
+        li{list-style-type: none;padding: 3px 0;}
+        button:hover{background-color: #ccc;}
+        .base{
+            display: block;
+            margin: 20px auto;
+            padding-top: 30px;
+            font-size: 48px;
+        }
+
+    </style>
+</head>
+<body>
+    
+    <div class="box">
+        <h2>Gerador de bases</h2>
+        <ul>
+            Instruções de uso:
+            <li>Digite o vetor genérico do espaço vetorial ex:(x,y,z)</li>
+            <li>Separe as componentes do vetor por vírgula(,)</li>
+        </ul>
+        <input type="text" id="entrada" value="" placeholder="(x,y,z)">
+        <input type="submit" id="acao" value="Gerar!">
+        <span class="base"></span>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+    <script>     
+
+    function detLaplace($n,$a){
+       let n = $n;
+       let a = $a;
+    if(n == 1){
+        //Caso base: matriz 1x1
+        return a[0][0];
+    }else{
+        let det = 0;
+        let i, row, col, j_aux, i_aux;
+        
+        //Escolhe a primeira linha para calcular os cofatores
+        for(i = 0; i < n; i++){
+            //ignora os zeros (zero vezes qualquer número é igual zero)
+            if (a[0][i] != 0) {
+
+                let aux = new Array(n - 1);
+                for(let k = 0;k < aux.length;k++){
+                    aux[k] = new Array(n-1);
+                }
+                i_aux = 0;
+                j_aux = 0;
+                //Gera as matrizes para calcular os cofatores
+                for(row = 1; row < n; row++){
+                    for(col = 0; col < n; col++){
+                        if(col != i){
+                            aux[i_aux][j_aux] = a[row][col];
+                            j_aux++;
+                        }
+                    }
+                    i_aux++;
+                    j_aux = 0;
+                }
+                let factor = (i % 2 == 0)? a[0][i] : -a[0][i];
+                det = det + factor * detLaplace(n - 1, aux);
+            }
+        }
+        return det;
+    }
+}
+
+
+
+
+        $("#acao").click(function(){
+            let varLivres;
+            let unica;
+            let composta;
+            let letras = [];
+            composta = false
+            unica = true;
+            let det = 0;
+            varLivres = 0;
+            let vet = $("#entrada").val();
+            vet = vet.replace(/\(/g,"");
+            vet = vet.replace(/\)/g,"");
+            vet = vet.toLowerCase();
+            let componentes = vet.split(",");
+            let incog = [];
+            for(let i = 0;i < componentes.length;i++){
+            incog[i] = componentes[i].match(/[a-z]/g);
+            }
+            
+
+            for(let i = 0; i < incog.length;i++){
+                if((incog[i].length > 1) && (incog[i].length > varLivres)){
+                    composta = true;
+                    varLivres = incog[i].length;
+                    for(j = 0;j < incog[i].length;j++){
+                        letras[incog[i][j]] = Math.floor(Math.random()*10);
+                    }
+                }
+
+            }
+
+            if(!composta){
+            for(let i = 0; i < incog.length;i++){
+                for(let j = 0; j < incog[i].length;j++){
+                    unica = true;
+                    
+                    for(let k = i+1; k < incog.length;k++){
+                        
+                        for(let h = 0; h < incog[k].length;h++){
+                            
+                              if((incog[i][j] == incog[k][h])){
+                                unica = false;
+                              }
+                        }
+                    }
+                }
+                if(unica){
+                    varLivres += 1;
+                    for(j = 0;j < incog[i].length;j++){
+                        letras[incog[i][j]] = 1;
+                    }
+                }
+            }
+        }
+
+        let base = new Array(varLivres-1);
+
+        for(let i = 0;i < varLivres;i++){
+            for(let j = 0;j < componentes.length;j++){
+                base[i] = new Array(j);
+            }
+        }
+        let matriz = new Array(varLivres);
+        let mat = new Array(varLivres);
+        for(let i =0;i < varLivres; i++){
+            matriz[i] = new Array(varLivres);
+            mat[i] = new Array(varLivres);
+        }
+
+        for(let i = 0;i < incog.length;i++){
+            for(let j = 0;j < incog[i].length;j++){
+                componentes[i] = componentes[i].replace(incog[i][j],'letras['+"'"+incog[i][j]+"'"+']');
+            }
+        }
+        while(det == 0){
+            for(let i = 0;i < varLivres;i++){
+                let aux = 0
+                for(let k = 0;k < incog.length;k++){
+                    if(composta){
+                        if(incog[k].length == 1){
+                            let num = Math.floor(Math.random()*10);
+                            letras[incog[k]] = num;
+                            mat[i][aux] = num;
+                            aux += 1;
+                        }
+                    }else{
+                        if(varLivres == 1){
+                            let num = Math.floor(Math.random()*10) + 1;
+                            letras[incog[k]] = num;
+                        }
+                        else{
+                            let num = Math.floor(Math.random()*10);
+                            letras[incog[k]] = num;
+                            //mat[i][aux] = num;
+                            //aux += 1;
+                        }
+                    }
+                }
+                for(let j = 0;j < componentes.length;j++){
+                    base[i][j] = eval(componentes[j]);
+                }
+            }
+
+
+
+
+            if(composta){
+                for(let i  = 0; i < matriz.length;i++){
+                    for(let j = 0;j < matriz.length;j++){
+                        matriz[i][j] = mat[j][i];
+                    }
+                }
+            }
+
+            let ordem = matriz.length;
+            if(varLivres == componentes.length || composta){
+                if(!composta){
+                for(let i = 0;i < base.length;i++){
+                    for(let j = 0;j < base.length;j++){
+                        matriz[i][j] = base[j][i];
+                    }
+                }
+                }
+                    det = detLaplace(ordem,matriz);
+                
+                console.log(det);
+               }
+               else{
+                det = 1;
+               }
+           }
+            
+        $(".base").html("");
+            for(let i = 0; i < base.length;i++){
+                $(".base").append("(");
+                for(let j = 0; j < componentes.length; j++){
+                    $(".base").append(" "+base[i][j])
+                    if(j != componentes.length - 1){
+                        $(".base").append(",");
+                    }
+                }
+                $(".base").append(") ");
+            }
+            })
+            
+
+
+
+    </script>
+</body>
+</html>
